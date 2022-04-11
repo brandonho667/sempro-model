@@ -1,0 +1,36 @@
+{
+    "experiment_name": "default_experiment",
+    "dataset":{
+        "sem_dataset":"sem_dataset",
+        "test_split":0.2,
+        "val_split":0.25,
+        "random_state":42
+    },
+    "model": {
+        "pretrained_model" : false,
+        "model_name" : "resnext_large",
+        "criterion" : "L1",
+        "fc_size": 2048
+    },
+    "hparams":{
+        "optimizer": "AdamW",
+        "batch_size": 10,
+        "lr": 1e-6,
+        "weight_decay": 0.02,
+        "LR_scheduler": "step",
+        "steps_per_decay": 20, 
+        "LR_gamma": 0.5
+    },
+    "output":{
+        "train_file_suffix": "train.csv",
+        "plot_folder_suffix": "plots",
+        "best_model_path": "best.pt",
+        "dpi": 300
+    },
+    "transforms":{
+        "resize":256,
+        "crop":224,
+        "normalize":[0,1]
+    },
+    "epochs": 100
+}
