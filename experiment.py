@@ -384,5 +384,24 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,"test_abserr_dist.png"), dpi=self.dpi)
     
+    
+    def getExample(self, partition=0,idx=0):
+        if partition == 0: #Training
+            if idx >= len(self.train_eval_data):
+                print("Index out of bounds for Training dataset")
+                raise Exception("Out of Bounds")
+            return self.train_eval_data[idx]
+        elif partition == 1: #Validation
+            if idx >= len(self.val_data):
+                print("Index out of bounds for Training dataset")
+                raise Exception("Out of Bounds")
+            return self.val_data[idx]
+        elif partition == 2: #Test
+            if idx >= len(self.test_data):
+                print("Index out of bounds for Training dataset")
+                raise Exception("Out of Bounds")
+            return self.test_data[idx]
+        print("Incorrect partition selected, 0 for training, 1 for validation, 2 for test.")
+        raise Exception("Incorrect dataset chosen")
     ##### Test
     

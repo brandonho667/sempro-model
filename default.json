@@ -8,7 +8,7 @@
     },
     "model": {
         "pretrained_model" : false,
-        "model_name" : "resnext_large",
+        "model_name" : "resnext_small",
         "criterion" : "L1",
         "fc_size": 2048
     },
