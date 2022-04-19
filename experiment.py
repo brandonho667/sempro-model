@@ -316,6 +316,8 @@ class Experiment(object):
         model.eval()
         train_mae_loss = []
         train_reg_loss = []
+        train_pred = []
+        train_label = []
         for image, label, weight in tqdm(self.train_eval_loader, desc="Train data: "):
             # Send variables to device
             image = image.to(device)
@@ -332,6 +334,8 @@ class Experiment(object):
                 (train_mae_loss, abs_err(pred, label)))
             train_reg_loss = np.concatenate(
                 (train_reg_loss, reg_err(pred, label)))
+            train_pred = np.concatenate((train_pred, pred))
+            train_label = np.concatenate((train_label, label))
         # Get training data error distribution
         plt.figure(1)
         sns.histplot(train_reg_loss)  # , kde=True)
@@ -348,10 +352,24 @@ class Experiment(object):
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_abserr_dist.png"), dpi=self.dpi)
 
+        plt.figure(num=3, dpi=100)
+        plt.scatter(train_label, train_pred, s=2)
+        plt.gca().set_box_aspect(1)
+        plt.gca().set_xlim(0, 10)
+        plt.gca().set_ylim(0, 10)
+        plt.gca().set_xlabel("Actual")
+        plt.gca().set_ylabel("Predicted")
+        plt.gca().set_title("Training data")
+        xpoints = ypoints = plt.gca().get_xlim()
+        plt.gca().plot(xpoints, ypoints, linestyle='-',
+                       color='k', lw=1, scalex=False, scaley=False)
+
         # Generate itemwise validation errors using model
         model.eval()
         val_mae_loss = []
         val_reg_loss = []
+        val_pred = []
+        val_label = []
 
         for image, label, weight in tqdm(self.val_loader, desc="Validation data: "):
             # Send variables to device
@@ -367,26 +385,42 @@ class Experiment(object):
             # Compute loss
             val_mae_loss = np.concatenate((val_mae_loss, abs_err(pred, label)))
             val_reg_loss = np.concatenate((val_reg_loss, reg_err(pred, label)))
+            val_pred = np.concatenate((val_pred, pred))
+            val_label = np.concatenate((val_label, label))
 
         # get validation data error distribution
-        plt.figure(3)
+        plt.figure(4)
         sns.histplot(val_reg_loss)
         plt.gca().set_title("Validation data log10 error distribution")
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_err_dist.png"), dpi=self.dpi)
         # get validation data abs error distribution
-        plt.figure(4)
+        plt.figure(5)
         sns.histplot(val_mae_loss)
         plt.gca().set_title("Validation data log10 absolute error distribution")
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_abserr_dist.png"), dpi=self.dpi)
 
+        plt.figure(num=6, dpi=100)
+        plt.scatter(val_label, val_pred, s=2)
+        plt.gca().set_box_aspect(1)
+        plt.gca().set_xlim(0, 10)
+        plt.gca().set_ylim(0, 10)
+        plt.gca().set_xlabel("Actual")
+        plt.gca().set_ylabel("Predicted")
+        plt.gca().set_title("Validation data")
+        xpoints = ypoints = plt.gca().get_xlim()
+        plt.gca().plot(xpoints, ypoints, linestyle='-',
+                       color='k', lw=1, scalex=False, scaley=False)
+
         # Evaluate test distribution
         model.eval()
         test_mae_loss = []
         test_reg_loss = []
+        test_pred = []
+        test_label = []
 
         for image, label, weight in tqdm(self.test_loader, desc="Test data: "):
             # Send variables to device
@@ -404,20 +438,34 @@ class Experiment(object):
                 (test_mae_loss, abs_err(pred, label)))
             test_reg_loss = np.concatenate(
                 (test_reg_loss, reg_err(pred, label)))
+            test_pred = np.concatenate((test_pred, pred))
+            test_label = np.concatenate((test_label, label))
         # get test data error distribution
-        plt.figure(5)
+        plt.figure(7)
         sns.histplot(test_reg_loss)
         plt.gca().set_title("Test data log10 error distribution")
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_err_dist.png"), dpi=self.dpi)
         # get test data abs error distribution
-        plt.figure(6)
+        plt.figure(8)
         sns.histplot(test_mae_loss)
         plt.gca().set_title("Test data log10 absolute error distribution")
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_abserr_dist.png"), dpi=self.dpi)
+
+        plt.figure(num=9, dpi=100)
+        plt.scatter(test_label, test_pred, s=2)
+        plt.gca().set_box_aspect(1)
+        plt.gca().set_xlim(0, 10)
+        plt.gca().set_ylim(0, 10)
+        plt.gca().set_xlabel("Actual")
+        plt.gca().set_ylabel("Predicted")
+        plt.gca().set_title("Test data")
+        xpoints = ypoints = plt.gca().get_xlim()
+        plt.gca().plot(xpoints, ypoints, linestyle='-',
+                       color='k', lw=1, scalex=False, scaley=False)
 
     # Test
     def clear_cache(self):
