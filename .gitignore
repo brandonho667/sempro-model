@@ -4,3 +4,4 @@ __pycache__
 experiments
 SEM_Final.xlsx
 sempro-env
+best_resnext_model.pt
