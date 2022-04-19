@@ -16,7 +16,7 @@
         "optimizer": "AdamW",
         "batch_size": 10,
         "lr": 1e-6,
-        "weight_decay": 0.02,
+        "weight_decay": 0.03,
         "LR_scheduler": "step",
         "steps_per_decay": 20, 
         "LR_gamma": 0.5
