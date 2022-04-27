@@ -59,7 +59,7 @@ class SEMPro_resNext(torch.nn.Module):
                 
 class SEMPro_denseNet(torch.nn.Module):
     def __init__(self, fc_size=2048, size = 0,  pretrained = False):
-        super(SEMPro_resNext,self).__init__()
+        super(SEMPro_denseNet,self).__init__()
         if size == 0:
             self.model = models.densenet121(pretrained=pretrained)
         elif size == 1:
@@ -89,7 +89,7 @@ class SEMPro_denseNet(torch.nn.Module):
                 
 class SEMPro_ConvNext(torch.nn.Module):
     def __init__(self, fc_size=2048, size = 0, pretrained = False):
-        super(SEMPro_resNext,self).__init__()
+        super(SEMPro_ConvNext,self).__init__()
         if size == 0:
             self.model = models.convnext_tiny(pretrained=pretrained)
         elif size == 1:
@@ -100,7 +100,7 @@ class SEMPro_ConvNext(torch.nn.Module):
             self.model = models.convnext_large(pretrained=pretrained)
         else:
             print("Invalid size specified, defaulting to convnext_tiny")
-            self.model = models.convnext_tiny(pretrained=pretrained)
+            self.model = models.convnext_tiny(pretrained=pretrained)z
         self.model.fc = torch.nn.Linear(fc_size,1)
     def forward(self,x):
         x = self.model(x)
