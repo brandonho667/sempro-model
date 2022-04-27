@@ -8,11 +8,12 @@ from PIL import Image
 import torch
 from utils import *
 from scipy.ndimage import convolve1d
+from matplotlib import pyplot as plt
 
 
 class semDataset(Dataset):
     def __init__(self, filepath="SEM_Final.xlsx", transform=None,
-                 reweight='sqrt_inv', lds=True, lds_kernel='gaussian', lds_ks=5, lds_sigma=2):
+                 reweight='sqrt_inv', lds=True, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=3):
         sem_df = pd.read_excel("SEM_Final.xlsx")
         parsed_sem_df = sem_df[sem_df['measurement'].notna()]
         parsed_sem_df = parsed_sem_df[parsed_sem_df['SEM_img'].notna()]
@@ -26,7 +27,7 @@ class semDataset(Dataset):
         self.sem_df = parsed_sem_df
         self.transform = transform
         self.weights = self._prepare_weights(
-            reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma)
+            reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma, bf=bf)
 
     def __len__(self):
         return self.sem_df.shape[0]
@@ -74,16 +75,28 @@ class semDataset(Dataset):
             'float32') if self.weights is not None else np.asarray(np.float32(1.))
         return image, label, weight
 
-    def _prepare_weights(self, reweight, max_target=51, lds=False, lds_kernel='gaussian', lds_ks=5, lds_sigma=2):
+    def _prepare_weights(self, reweight, max_target=11, lds=False, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=10):
         assert reweight in {'none', 'inverse', 'sqrt_inv'}
         assert reweight != 'none' if lds else True, \
             "Set reweight to \'sqrt_inv\' (default) or \'inverse\' when using LDS"
+        max_tf = max_target*bf
 
-        value_dict = {x: 0 for x in range(max_target)}
+        value_dict = {x: 0 for x in range(max_tf)}
         labels = self.sem_df["measurement"].tolist()
+
+        # # Creating histogram
+        # fig, axs = plt.subplots(1, 1,
+        #                         figsize=(10, 7),
+        #                         tight_layout=True)
+
+        # axs.hist(labels, bins=max_tf)
+        # plt.ylabel('frequency')
+        # plt.xlabel('log of modulus')
+        # # Show plot
+        # plt.show()
         # mbr
         for label in labels:
-            value_dict[min(max_target - 1, int(label))] += 1
+            value_dict[min(max_tf - 1, int(label*bf))] += 1
         if reweight == 'sqrt_inv':
             value_dict = {k: np.sqrt(v) for k, v in value_dict.items()}
         elif reweight == 'inverse':
@@ -91,7 +104,7 @@ class semDataset(Dataset):
             value_dict = {k: np.clip(v, 5, 1000)
                           for k, v in value_dict.items()}
         num_per_label = [
-            value_dict[min(max_target - 1, int(label))] for label in labels]
+            value_dict[min(max_tf - 1, int(label*bf))] for label in labels]
         if not len(num_per_label) or reweight == 'none':
             return None
         print(f"Using re-weighting: [{reweight.upper()}]")
@@ -103,8 +116,12 @@ class semDataset(Dataset):
             smoothed_value = convolve1d(
                 np.asarray([v for _, v in value_dict.items()]), weights=lds_kernel_window, mode='constant')
             num_per_label = [
-                smoothed_value[min(max_target - 1, int(label))] for label in labels]
-
+                smoothed_value[min(max_tf - 1, int(label*bf))] for label in labels]
+        # plt.bar(range(len(smoothed_value)),
+        #         smoothed_value, color='g')
+        # plt.ylabel('frequency')
+        # plt.xlabel('{bf} x log of modulus'.format(bf=bf))
+        # plt.show()
         weights = [np.float32(1 / x) for x in num_per_label]
         scaling = len(weights) / np.sum(weights)
         weights = [scaling * x for x in weights]

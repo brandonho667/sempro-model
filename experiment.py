@@ -97,13 +97,13 @@ class Experiment(object):
                                               test_size=config_data['dataset']["val_split"],
                                               random_state=config_data['dataset']["random_state"])
         self.train_data = torch.utils.data.Subset(
-            dataset(transform=transform), train_idx)
+            dataset(transform=transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.train_eval_data = torch.utils.data.Subset(
-            dataset(transform=eval_transform), train_idx)
+            dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.val_data = torch.utils.data.Subset(
-            dataset(transform=eval_transform), val_idx)
+            dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), val_idx)
         self.test_data = torch.utils.data.Subset(
-            dataset(transform=eval_transform), test_idx)
+            dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), test_idx)
 
         self.batch_size = config_data['hparams']['batch_size']
         self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size,
@@ -292,6 +292,7 @@ class Experiment(object):
         plt.legend()
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "log10mae_loss.png"), dpi=self.dpi)
+        plt.clf()
         # plot log10 MSE loss
         plt.figure(2)
         plt.plot(range(1, self.epochs+1), self.train_mse_loss_list,
@@ -304,6 +305,7 @@ class Experiment(object):
         plt.legend()
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "log10mse_loss.png"), dpi=self.dpi)
+        plt.clf()
 
     def analyze_error_dist(self):
         '''
@@ -343,6 +345,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_err_dist.png"), dpi=self.dpi)
+        plt.clf()
         # Get training data abs error distrubtion
         plt.figure(2)
         # Plot absolute error (log) distribution for model
@@ -351,6 +354,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_abserr_dist.png"), dpi=self.dpi)
+        plt.clf()
 
         plt.figure(num=3, dpi=100)
         plt.scatter(train_label, train_pred, s=2)
@@ -363,6 +367,9 @@ class Experiment(object):
         xpoints = ypoints = plt.gca().get_xlim()
         plt.gca().plot(xpoints, ypoints, linestyle='-',
                        color='k', lw=1, scalex=False, scaley=False)
+        plt.savefig(os.path.join(self.__plot_folder_path,
+                    "train_pred.png"), dpi=self.dpi)
+        plt.clf()
 
         # Generate itemwise validation errors using model
         model.eval()
@@ -395,6 +402,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_err_dist.png"), dpi=self.dpi)
+        plt.clf()
         # get validation data abs error distribution
         plt.figure(5)
         sns.histplot(val_mae_loss)
@@ -402,6 +410,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_abserr_dist.png"), dpi=self.dpi)
+        plt.clf()
 
         plt.figure(num=6, dpi=100)
         plt.scatter(val_label, val_pred, s=2)
@@ -414,6 +423,9 @@ class Experiment(object):
         xpoints = ypoints = plt.gca().get_xlim()
         plt.gca().plot(xpoints, ypoints, linestyle='-',
                        color='k', lw=1, scalex=False, scaley=False)
+        plt.savefig(os.path.join(self.__plot_folder_path,
+                    "valid_pred.png"), dpi=self.dpi)
+        plt.clf()
 
         # Evaluate test distribution
         model.eval()
@@ -447,6 +459,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_err_dist.png"), dpi=self.dpi)
+        plt.clf()
         # get test data abs error distribution
         plt.figure(8)
         sns.histplot(test_mae_loss)
@@ -454,6 +467,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_abserr_dist.png"), dpi=self.dpi)
+        plt.clf()
 
         plt.figure(num=9, dpi=100)
         plt.scatter(test_label, test_pred, s=2)
@@ -466,7 +480,11 @@ class Experiment(object):
         xpoints = ypoints = plt.gca().get_xlim()
         plt.gca().plot(xpoints, ypoints, linestyle='-',
                        color='k', lw=1, scalex=False, scaley=False)
+        plt.savefig(os.path.join(self.__plot_folder_path,
+                                 "test_pred.png"), dpi=self.dpi)
+        plt.clf()
 
     # Test
+
     def clear_cache(self):
         torch.cuda.empty_cache()
