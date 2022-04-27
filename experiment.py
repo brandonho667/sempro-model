@@ -126,6 +126,30 @@ class Experiment(object):
         elif config_data["model"]["model_name"] == "resnext_small":
             self.model = SEMPro_resNext(fc_size=config_data["model"]['fc_size'],
                                         large=False, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "densenet121":
+            self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
+                                        size=0, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "densenet169":
+            self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
+                                        size=1, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "densenet201":
+            self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
+                                        size=2, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "densenet161":
+            self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
+                                        size=3, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "convnext_tiny":
+            self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
+                                        size=0, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "convnext_small":
+            self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
+                                        size=1, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "convnext_base":
+            self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
+                                        size=2, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "convnext_large":
+            self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
+                                        size=3, pretrained=pretrained)
         else:
             raise Exception("Invalid model specified!")
         self.model.to(device)
