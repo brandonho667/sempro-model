@@ -1,5 +1,5 @@
 {
-    "experiment_name": "densenet_exp",
+    "experiment_name": "convnex_exp",
     "dataset":{
         "sem_dataset":"sem_dataset",
         "test_split":0.2,
@@ -8,14 +8,14 @@
     },
     "model": {
         "pretrained_model" : false,
-        "model_name" : "densenet161",
+        "model_name" : "convnext_tiny",
         "criterion" : "L1",
         "fc_size": 2048
     },
     "hparams":{
         "optimizer": "AdamW",
         "batch_size": 10,
-        "lr": 1e-5,
+        "lr": 1e-6,
         "weight_decay": 0.03,
         "LR_scheduler": "step",
         "steps_per_decay": 20, 
