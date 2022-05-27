@@ -1,9 +1,9 @@
 {
-    "experiment_name": "default_experiment",
+    "experiment_name": "test",
     "dataset": {
         "sem_dataset": "sem_dataset",
-        "test_split": 0.2,
-        "val_split": 0.25,
+        "test_split": 1,
+        "val_split": 0,
         "random_state": 42
     },
     "model": {
@@ -15,11 +15,14 @@
     "hparams": {
         "optimizer": "AdamW",
         "batch_size": 10,
-        "lr": 1e-6,
-        "weight_decay": 0.03,
+        "lr": 1e-05,
+        "weight_decay": 0.02,
         "LR_scheduler": "step",
         "steps_per_decay": 20,
-        "LR_gamma": 0.5
+        "LR_gamma": 0.5,
+        "lds_ks": 10,
+        "lds_sigma": 2,
+        "bf": 3
     },
     "output": {
         "train_file_suffix": "train.csv",
@@ -35,5 +38,5 @@
             1
         ]
     },
-    "epochs": 100
+    "epochs": 50
 }

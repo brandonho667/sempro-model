@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 class semDataset(Dataset):
     def __init__(self, filepath="SEM_Final.xlsx", transform=None,
                  reweight='sqrt_inv', lds=True, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=3):
-        sem_df = pd.read_excel("SEM_Final.xlsx")
+        sem_df = pd.read_excel(filepath)
         parsed_sem_df = sem_df[sem_df['measurement'].notna()]
         parsed_sem_df = parsed_sem_df[parsed_sem_df['SEM_img'].notna()]
         # print(parsed_sem_df['skip'].isna().sum())

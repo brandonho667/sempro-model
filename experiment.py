@@ -97,7 +97,7 @@ class Experiment(object):
                                               test_size=config_data['dataset']["val_split"],
                                               random_state=config_data['dataset']["random_state"])
         self.train_data = torch.utils.data.Subset(
-            dataset(transform=transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.train_eval_data = torch.utils.data.Subset(
             dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.val_data = torch.utils.data.Subset(
@@ -128,28 +128,28 @@ class Experiment(object):
                                         large=False, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "densenet121":
             self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
-                                        size=0, pretrained=pretrained)
+                                         size=0, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "densenet169":
             self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
-                                        size=1, pretrained=pretrained)
+                                         size=1, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "densenet201":
             self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
-                                        size=2, pretrained=pretrained)
+                                         size=2, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "densenet161":
             self.model = SEMPro_denseNet(fc_size=config_data["model"]['fc_size'],
-                                        size=3, pretrained=pretrained)
+                                         size=3, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "convnext_tiny":
             self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
-                                        size=0, pretrained=pretrained)
+                                         size=0, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "convnext_small":
             self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
-                                        size=1, pretrained=pretrained)
+                                         size=1, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "convnext_base":
             self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
-                                        size=2, pretrained=pretrained)
+                                         size=2, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "convnext_large":
             self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
-                                        size=3, pretrained=pretrained)
+                                         size=3, pretrained=pretrained)
         else:
             raise Exception("Invalid model specified!")
         self.model.to(device)
@@ -182,6 +182,9 @@ class Experiment(object):
         if config_data['hparams']['LR_scheduler'] == 'step':
             self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, config_data['hparams']['steps_per_decay'],
                                                              gamma=config_data['hparams']['LR_gamma'])
+        elif config_data['hparams']['LR_scheduler'] == 'plateau':
+            self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self.optimizer)
         else:
             self.scheduler = None
         self.epochs = config_data['epochs']
@@ -258,7 +261,7 @@ class Experiment(object):
             self.val_mae_loss_list.append(val_mae_loss)
             self.val_mse_loss_list.append(val_mse_loss)
             if self.scheduler:
-                self.scheduler.step()
+                self.scheduler.step(val_mse_loss)
             # Checkpoint best model
             if val_mae_loss < best_mae:
                 best_mae = val_mae_loss
@@ -299,6 +302,9 @@ class Experiment(object):
     def get_best_model(self):
         return torch.load(self.__best_model_path)
 
+    def set_best_model(self, path):
+        self.__best_model_path = path
+
     def analyze_training(self):
         '''
         This function analyzes the training loop and data distribution of the model,
@@ -316,7 +322,7 @@ class Experiment(object):
         plt.legend()
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "log10mae_loss.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
         # plot log10 MSE loss
         plt.figure(2)
         plt.plot(range(1, self.epochs+1), self.train_mse_loss_list,
@@ -329,7 +335,7 @@ class Experiment(object):
         plt.legend()
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "log10mse_loss.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
 
     def analyze_error_dist(self):
         '''
@@ -369,7 +375,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_err_dist.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
         # Get training data abs error distrubtion
         plt.figure(2)
         # Plot absolute error (log) distribution for model
@@ -378,7 +384,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_abserr_dist.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
 
         plt.figure(num=3, dpi=100)
         plt.scatter(train_label, train_pred, s=2)
@@ -393,7 +399,7 @@ class Experiment(object):
                        color='k', lw=1, scalex=False, scaley=False)
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_pred.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
 
         # Generate itemwise validation errors using model
         model.eval()
@@ -426,7 +432,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_err_dist.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
         # get validation data abs error distribution
         plt.figure(5)
         sns.histplot(val_mae_loss)
@@ -434,7 +440,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_abserr_dist.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
 
         plt.figure(num=6, dpi=100)
         plt.scatter(val_label, val_pred, s=2)
@@ -449,7 +455,7 @@ class Experiment(object):
                        color='k', lw=1, scalex=False, scaley=False)
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "valid_pred.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
 
         # Evaluate test distribution
         model.eval()
@@ -483,7 +489,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_err_dist.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
         # get test data abs error distribution
         plt.figure(8)
         sns.histplot(test_mae_loss)
@@ -491,7 +497,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_abserr_dist.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
 
         plt.figure(num=9, dpi=100)
         plt.scatter(test_label, test_pred, s=2)
@@ -506,7 +512,26 @@ class Experiment(object):
                        color='k', lw=1, scalex=False, scaley=False)
         plt.savefig(os.path.join(self.__plot_folder_path,
                                  "test_pred.png"), dpi=self.dpi)
-        plt.clf()
+        # plt.clf()
+
+    def getExample(self, partition=0, idx=0):
+        if partition == 0:  # Training
+            if idx >= len(self.train_eval_data):
+                print("Index out of bounds for Training dataset")
+                raise Exception("Out of Bounds")
+            return self.train_eval_data[idx]
+        elif partition == 1:  # Validation
+            if idx >= len(self.val_data):
+                print("Index out of bounds for Training dataset")
+                raise Exception("Out of Bounds")
+            return self.val_data[idx]
+        elif partition == 2:  # Test
+            if idx >= len(self.test_data):
+                print("Index out of bounds for Training dataset")
+                raise Exception("Out of Bounds")
+            return self.test_data[idx]
+        print("Incorrect partition selected, 0 for training, 1 for validation, 2 for test.")
+        raise Exception("Incorrect dataset chosen")
 
     # Test
 

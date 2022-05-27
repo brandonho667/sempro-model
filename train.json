@@ -1,7 +1,8 @@
 {
-    "experiment_name": "default_experiment",
+    "experiment_name": "train",
     "dataset": {
         "sem_dataset": "sem_dataset",
+        "filepath": "SEM_Final.xlsx",
         "test_split": 0.2,
         "val_split": 0.25,
         "random_state": 42
@@ -15,11 +16,14 @@
     "hparams": {
         "optimizer": "AdamW",
         "batch_size": 10,
-        "lr": 1e-6,
-        "weight_decay": 0.03,
-        "LR_scheduler": "step",
+        "lr": 1e-05,
+        "weight_decay": 0.02,
+        "LR_scheduler": "plateau",
         "steps_per_decay": 20,
-        "LR_gamma": 0.5
+        "LR_gamma": 0.5,
+        "lds_ks": 10,
+        "lds_sigma": 2,
+        "bf": 3
     },
     "output": {
         "train_file_suffix": "train.csv",
@@ -35,5 +39,5 @@
             1
         ]
     },
-    "epochs": 100
+    "epochs": 50
 }
