@@ -1,7 +1,7 @@
 sem
 .ipynb_checkpoints
 __pycache__
-experiments
 SEM_Final.xlsx
+experiments
 sempro-env
 best_resnext_model.pt
