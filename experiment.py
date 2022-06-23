@@ -99,11 +99,14 @@ class Experiment(object):
         self.train_data = torch.utils.data.Subset(
             dataset(filepath=config_data['dataset']['filepath'], transform=transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.train_eval_data = torch.utils.data.Subset(
-            dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.val_data = torch.utils.data.Subset(
-            dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), val_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), val_idx)
         self.test_data = torch.utils.data.Subset(
-            dataset(transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), test_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), test_idx)
+        if config_data['experiment_name'] == "test":
+            self.test_data = dataset(filepath=config_data['dataset']['filepath'],
+                                     transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf'])
 
         self.batch_size = config_data['hparams']['batch_size']
         self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size,
@@ -150,6 +153,8 @@ class Experiment(object):
         elif config_data["model"]["model_name"] == "convnext_large":
             self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
                                          size=3, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "baseplate":
+            self.model = torch.load("experiments/baseplate/best.pt")
         else:
             raise Exception("Invalid model specified!")
         self.model.to(device)
@@ -261,7 +266,7 @@ class Experiment(object):
             self.val_mae_loss_list.append(val_mae_loss)
             self.val_mse_loss_list.append(val_mse_loss)
             if self.scheduler:
-                self.scheduler.step(val_mse_loss)
+                self.scheduler.step(val_mae_loss)
             # Checkpoint best model
             if val_mae_loss < best_mae:
                 best_mae = val_mae_loss

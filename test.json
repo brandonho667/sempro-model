@@ -2,8 +2,9 @@
     "experiment_name": "test",
     "dataset": {
         "sem_dataset": "sem_dataset",
-        "test_split": 1,
-        "val_split": 0,
+        "filepath": "SEM_test.xlsx",
+        "test_split": 0.2,
+        "val_split": 0.2,
         "random_state": 42
     },
     "model": {

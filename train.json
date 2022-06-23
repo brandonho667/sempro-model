@@ -1,5 +1,5 @@
 {
-    "experiment_name": "train",
+    "experiment_name": "train_plateau",
     "dataset": {
         "sem_dataset": "sem_dataset",
         "filepath": "SEM_Final.xlsx",
@@ -15,7 +15,7 @@
     },
     "hparams": {
         "optimizer": "AdamW",
-        "batch_size": 10,
+        "batch_size": 0,
         "lr": 1e-05,
         "weight_decay": 0.02,
         "LR_scheduler": "plateau",
@@ -39,5 +39,5 @@
             1
         ]
     },
-    "epochs": 50
+    "epochs": 100
 }

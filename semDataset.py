@@ -12,8 +12,8 @@ from matplotlib import pyplot as plt
 
 
 class semDataset(Dataset):
-    def __init__(self, filepath="SEM_Final.xlsx", transform=None,
-                 reweight='sqrt_inv', lds=True, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=3):
+    def __init__(self, filepath="SEM_GOPNIPAM.xlsx", transform=None,
+                 reweight='sqrt_inv', lds=False, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=3):
         sem_df = pd.read_excel(filepath)
         parsed_sem_df = sem_df[sem_df['measurement'].notna()]
         parsed_sem_df = parsed_sem_df[parsed_sem_df['SEM_img'].notna()]
@@ -25,6 +25,7 @@ class semDataset(Dataset):
         parsed_sem_df['measurement'] = parsed_sem_df['measurement'].apply(
             self.convert_measurement)
         self.sem_df = parsed_sem_df
+        print("dataset size: ", self.sem_df.shape)
         self.transform = transform
         self.weights = self._prepare_weights(
             reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma, bf=bf)
@@ -66,7 +67,11 @@ class semDataset(Dataset):
         return np.log10(value)
 
     def __getitem__(self, index):
+        # print(index, self.sem_df.iloc[index]["img_path"])
         image = Image.open(self.sem_df.iloc[index]["img_path"])
+        if image.mode == "L":
+            # print("grayscale found, converting to RGB")
+            image = image.convert('RGB')
         label = self.sem_df.iloc[index]["measurement"]
         if self.transform is not None:
             image = self.transform(image)
