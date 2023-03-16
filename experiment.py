@@ -67,11 +67,13 @@ class Experiment(object):
         # TODO: Modularize rescaling factors
 
         # Configurable transforms
+        self.rotate = config_data['transforms']['rotate']
         self.resize = config_data['transforms']['resize']
         self.crop = config_data['transforms']['crop']
         self.normalize = config_data['transforms']['normalize']
         transform = transforms.Compose(
-            [transforms.Resize(self.resize),
+            [transforms.RandomRotation(degrees=self.rotate),
+             transforms.Resize(self.resize),
              #     transforms.Grayscale(3),
              transforms.CenterCrop(self.crop),
              transforms.RandomHorizontalFlip(),
@@ -97,16 +99,15 @@ class Experiment(object):
                                               test_size=config_data['dataset']["val_split"],
                                               random_state=config_data['dataset']["random_state"])
         self.train_data = torch.utils.data.Subset(
-            dataset(filepath=config_data['dataset']['filepath'], transform=transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=transform, lds=config_data['hparams']['lds'], lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.train_eval_data = torch.utils.data.Subset(
-            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds=config_data['hparams']['lds'], lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), train_idx)
         self.val_data = torch.utils.data.Subset(
-            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), val_idx)
+            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds=config_data['hparams']['lds'], lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), val_idx)
         self.test_data = torch.utils.data.Subset(
-            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), test_idx)
-        if config_data['experiment_name'] == "test":
-            self.test_data = dataset(filepath=config_data['dataset']['filepath'],
-                                     transform=eval_transform, lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf'])
+            dataset(filepath=config_data['dataset']['filepath'], transform=eval_transform, lds=config_data['hparams']['lds'], lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf']), test_idx)
+        self.all_data = dataset(filepath=config_data['dataset']['filepath'],
+                                transform=eval_transform, lds=config_data['hparams']['lds'], lds_ks=config_data['hparams']['lds_ks'], lds_sigma=config_data['hparams']['lds_sigma'], bf=config_data['hparams']['bf'])
 
         self.batch_size = config_data['hparams']['batch_size']
         self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size,
@@ -215,7 +216,7 @@ class Experiment(object):
             val_mae_loss = 0
             val_mse_loss = 0
             self.model.train()
-            for image, label, weight in tqdm(self.train_loader, desc="Training data: "):
+            for image, label, weight, path in tqdm(self.train_loader, desc="Training data: "):
                 # Send variables to device
                 image = image.to(device)
                 label = label.to(device)
@@ -243,7 +244,7 @@ class Experiment(object):
             train_mse_loss /= len(self.train_data)
             self.model.eval()
             # Run validation dataset
-            for image, label, weight in tqdm(self.val_loader, desc="Validation data: "):
+            for image, label, weight, path in tqdm(self.val_loader, desc="Validation data: "):
                 # Send variables to device
                 image = image.to(device)
                 label = label.to(device)
@@ -286,7 +287,7 @@ class Experiment(object):
         # Run testing loop
         test_mae_loss = 0
         test_mse_loss = 0
-        for image, label, weight in tqdm(self.test_loader, desc="Test data: "):
+        for image, label, weight, path in tqdm(self.test_loader, desc="Test data: "):
             # Send variables to device
             image = image.to(device)
             label = label.to(device)
@@ -327,7 +328,7 @@ class Experiment(object):
         plt.legend()
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "log10mae_loss.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
         # plot log10 MSE loss
         plt.figure(2)
         plt.plot(range(1, self.epochs+1), self.train_mse_loss_list,
@@ -340,7 +341,7 @@ class Experiment(object):
         plt.legend()
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "log10mse_loss.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
 
     def analyze_error_dist(self):
         '''
@@ -355,7 +356,7 @@ class Experiment(object):
         train_reg_loss = []
         train_pred = []
         train_label = []
-        for image, label, weight in tqdm(self.train_eval_loader, desc="Train data: "):
+        for image, label, weight, path in tqdm(self.train_eval_loader, desc="Train data: "):
             # Send variables to device
             image = image.to(device)
             label = label.to(device)
@@ -380,7 +381,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_err_dist.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
         # Get training data abs error distrubtion
         plt.figure(2)
         # Plot absolute error (log) distribution for model
@@ -389,7 +390,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_abserr_dist.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
 
         plt.figure(num=3, dpi=100)
         plt.scatter(train_label, train_pred, s=2)
@@ -404,7 +405,7 @@ class Experiment(object):
                        color='k', lw=1, scalex=False, scaley=False)
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "train_pred.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
 
         # Generate itemwise validation errors using model
         model.eval()
@@ -413,7 +414,7 @@ class Experiment(object):
         val_pred = []
         val_label = []
 
-        for image, label, weight in tqdm(self.val_loader, desc="Validation data: "):
+        for image, label, weight, path in tqdm(self.val_loader, desc="Validation data: "):
             # Send variables to device
             image = image.to(device)
             label = label.to(device)
@@ -437,7 +438,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_err_dist.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
         # get validation data abs error distribution
         plt.figure(5)
         sns.histplot(val_mae_loss)
@@ -445,7 +446,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "val_abserr_dist.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
 
         plt.figure(num=6, dpi=100)
         plt.scatter(val_label, val_pred, s=2)
@@ -460,7 +461,7 @@ class Experiment(object):
                        color='k', lw=1, scalex=False, scaley=False)
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "valid_pred.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
 
         # Evaluate test distribution
         model.eval()
@@ -469,7 +470,7 @@ class Experiment(object):
         test_pred = []
         test_label = []
 
-        for image, label, weight in tqdm(self.test_loader, desc="Test data: "):
+        for image, label, weight, path in tqdm(self.test_loader, desc="Test data: "):
             # Send variables to device
             image = image.to(device)
             label = label.to(device)
@@ -494,7 +495,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_err_dist.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
         # get test data abs error distribution
         plt.figure(8)
         sns.histplot(test_mae_loss)
@@ -502,7 +503,7 @@ class Experiment(object):
         plt.gca().set_xlabel("log10 absolute error")
         plt.savefig(os.path.join(self.__plot_folder_path,
                     "test_abserr_dist.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
 
         plt.figure(num=9, dpi=100)
         plt.scatter(test_label, test_pred, s=2)
@@ -517,7 +518,13 @@ class Experiment(object):
                        color='k', lw=1, scalex=False, scaley=False)
         plt.savefig(os.path.join(self.__plot_folder_path,
                                  "test_pred.png"), dpi=self.dpi)
-        # plt.clf()
+        plt.clf()
+
+        err = {"train_mae_loss": train_mae_loss.tolist(),
+               "val_mae_loss": val_mae_loss.tolist(),
+               "test_mae_loss": test_mae_loss.tolist()}
+        with open(os.path.join(self.__plot_folder_path, "loss.json"), "w") as f_loss:
+            json.dump(err, f_loss)
 
     def getExample(self, partition=0, idx=0):
         if partition == 0:  # Training
@@ -535,6 +542,11 @@ class Experiment(object):
                 print("Index out of bounds for Training dataset")
                 raise Exception("Out of Bounds")
             return self.test_data[idx]
+        elif partition == 3:
+            if idx >= len(self.all_data):
+                print("Index out of bounds for all dataset")
+                raise Exception("Out of Bounds")
+            return self.all_data[idx]
         print("Incorrect partition selected, 0 for training, 1 for validation, 2 for test.")
         raise Exception("Incorrect dataset chosen")
 

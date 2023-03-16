@@ -78,9 +78,9 @@ class semDataset(Dataset):
         label = torch.tensor(label)
         weight = np.asarray(self.weights[index]).astype(
             'float32') if self.weights is not None else np.asarray(np.float32(1.))
-        return image, label, weight
+        return image, label, weight, self.sem_df.iloc[index]["img_path"]
 
-    def _prepare_weights(self, reweight, max_target=11, lds=False, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=10):
+    def _prepare_weights(self, reweight, max_target=11, lds=True, lds_kernel='gaussian', lds_ks=5, lds_sigma=2, bf=10):
         assert reweight in {'none', 'inverse', 'sqrt_inv'}
         assert reweight != 'none' if lds else True, \
             "Set reweight to \'sqrt_inv\' (default) or \'inverse\' when using LDS"
@@ -88,15 +88,17 @@ class semDataset(Dataset):
 
         value_dict = {x: 0 for x in range(max_tf)}
         labels = self.sem_df["measurement"].tolist()
+        print("min label: ", min(labels))
+        print("max label: ", max(labels))
 
-        # # Creating histogram
-        # fig, axs = plt.subplots(1, 1,
-        #                         figsize=(10, 7),
-        #                         tight_layout=True)
+        # Creating histogram
+        # plt.rcParams['text.usetex'] = True
+        # plt.figure()
 
-        # axs.hist(labels, bins=max_tf)
-        # plt.ylabel('frequency')
-        # plt.xlabel('log of modulus')
+        # plt.hist(labels, bins=max_tf)
+        # plt.title(r"Distribution of Labels in SEMPro Dataset")
+        # plt.ylabel('Frequency')
+        # plt.xlabel(r'Modulus ($\log_{10}$ Pa)')
         # # Show plot
         # plt.show()
         # mbr
@@ -122,11 +124,15 @@ class semDataset(Dataset):
                 np.asarray([v for _, v in value_dict.items()]), weights=lds_kernel_window, mode='constant')
             num_per_label = [
                 smoothed_value[min(max_tf - 1, int(label*bf))] for label in labels]
-        # plt.bar(range(len(smoothed_value)),
-        #         smoothed_value, color='g')
-        # plt.ylabel('frequency')
-        # plt.xlabel('{bf} x log of modulus'.format(bf=bf))
-        # plt.show()
+
+            div = [(i/3, val) for i, val in enumerate(smoothed_value)]
+            # plt.bar(np.arange(0, len(smoothed_value)/3, 1/3),
+            #         smoothed_value, color='g')
+            # plt.title("LDS Smoothed Distribution of Labels in SEMPro dataset")
+            # plt.ylabel('Frequency')
+            # plt.xlabel(r'Modulus ($\log_{10}$ Pa)')
+            # plt.show()
+            print(plt.gcf().get_size_inches())
         weights = [np.float32(1 / x) for x in num_per_label]
         scaling = len(weights) / np.sum(weights)
         weights = [scaling * x for x in weights]

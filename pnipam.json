@@ -1,5 +1,5 @@
 {
-    "experiment_name": "go-pnipam-pretrained",
+    "experiment_name": "pnipam_kf5_linear",
     "dataset": {
         "sem_dataset": "sem_dataset",
         "filepath": "SEM_GOPNIPAM.xlsx",
@@ -8,7 +8,7 @@
         "random_state": 42
     },
     "model": {
-        "pretrained_model": false,
+        "pretrained_model": true,
         "model_name": "baseplate",
         "criterion": "L1",
         "fc_size": 2048
@@ -16,11 +16,12 @@
     "hparams": {
         "optimizer": "AdamW",
         "batch_size": 10,
-        "lr": 1e-05,
+        "lr": 5e-4,
         "weight_decay": 0.02,
         "LR_scheduler": "plateau",
         "steps_per_decay": 20,
         "LR_gamma": 0.5,
+        "lds": false,
         "lds_ks": 10,
         "lds_sigma": 2,
         "bf": 3
@@ -32,6 +33,7 @@
         "dpi": 300
     },
     "transforms": {
+        "rotate": 90,
         "resize": 256,
         "crop": 224,
         "normalize": [
@@ -39,5 +41,5 @@
             1
         ]
     },
-    "epochs": 100
+    "epochs": 10
 }

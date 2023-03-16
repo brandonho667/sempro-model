@@ -2,6 +2,7 @@
     "experiment_name": "default_experiment",
     "dataset": {
         "sem_dataset": "sem_dataset",
+        "filepath": "SEM_Final.xlsx",
         "test_split": 0.2,
         "val_split": 0.25,
         "random_state": 42
@@ -19,7 +20,11 @@
         "weight_decay": 0.03,
         "LR_scheduler": "step",
         "steps_per_decay": 20,
-        "LR_gamma": 0.5
+        "LR_gamma": 0.5,
+        "lds": true,
+        "lds_ks": 10,
+        "lds_sigma": 2,
+        "bf": 3
     },
     "output": {
         "train_file_suffix": "train.csv",
@@ -28,6 +33,7 @@
         "dpi": 300
     },
     "transforms": {
+        "rotate": 90,
         "resize": 256,
         "crop": 224,
         "normalize": [
