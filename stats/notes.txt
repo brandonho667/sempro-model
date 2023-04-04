@@ -1,0 +1,6 @@
+resnext50: 22981953
+convnext_tiny: 27819361
+densenet161: 26474209
+alexnet: 2478913
+vgg19: 20049473
+resnet50: 23510081

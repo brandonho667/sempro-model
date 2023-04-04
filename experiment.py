@@ -154,6 +154,32 @@ class Experiment(object):
         elif config_data["model"]["model_name"] == "convnext_large":
             self.model = SEMPro_ConvNext(fc_size=config_data["model"]['fc_size'],
                                          size=3, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "alexnet":
+            self.model = SEMPro_AlexNet()
+        elif config_data["model"]["model_name"] == "vgg_11":
+            self.model = SEMPro_VGG(fc_size=config_data["model"]['fc_size'],
+                                    size=0, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "vgg_13":
+            self.model = SEMPro_VGG(fc_size=config_data["model"]['fc_size'],
+                                    size=1, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "vgg_16":
+            self.model = SEMPro_VGG(fc_size=config_data["model"]['fc_size'],
+                                    size=2, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "vgg_19":
+            self.model = SEMPro_VGG(fc_size=config_data["model"]['fc_size'],
+                                    size=3, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "resnet18":
+            self.model = SEMPro_ResNet(fc_size=config_data["model"]['fc_size'],
+                                       size=0, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "resnet34":
+            self.model = SEMPro_ResNet(fc_size=config_data["model"]['fc_size'],
+                                       size=1, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "resnet50":
+            self.model = SEMPro_ResNet(fc_size=config_data["model"]['fc_size'],
+                                       size=2, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "resnet101":
+            self.model = SEMPro_ResNet(fc_size=config_data["model"]['fc_size'],
+                                       size=3, pretrained=pretrained)
         elif config_data["model"]["model_name"] == "baseplate":
             self.model = torch.load("experiments/baseplate/best.pt")
         else:

@@ -103,8 +103,7 @@ class SEMPro_ConvNext(torch.nn.Module):
         super(SEMPro_ConvNext, self).__init__()
         if size == 0:
             self.model = models.convnext_tiny(pretrained=pretrained)
-            self.model.classifier = torch.nn.Sequential(torch.nn.Flatten(start_dim=1, end_dim=-1),
-                                                        torch.nn.Linear(768, 1))
+            self.model.classifier = torch.nn.Linear(2208, 1)
         elif size == 1:
             self.model = models.convnext_small(pretrained=pretrained)
             self.model.classifier = torch.nn.Sequential(torch.nn.Flatten(start_dim=1, end_dim=-1),
@@ -122,6 +121,67 @@ class SEMPro_ConvNext(torch.nn.Module):
             self.model = models.convnext_tiny(pretrained=pretrained)
             self.model.classifier = torch.nn.Sequential(torch.nn.Flatten(start_dim=1, end_dim=-1),
                                                         torch.nn.Linear(768, 1))
+        print(self.model)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
+
+class SEMPro_AlexNet(torch.nn.Module):
+    def __init__(self, fc_size=2048, size=0, pretrained=False):
+        super(SEMPro_AlexNet, self).__init__()
+        self.model = models.alexnet()
+        self.model.classifier = torch.nn.Linear(9216, 1)
+        print(self.model)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
+
+class SEMPro_VGG(torch.nn.Module):
+    def __init__(self, fc_size=2048, size=0, pretrained=False):
+        super(SEMPro_VGG, self).__init__()
+        if size == 0:
+            self.model = models.vgg11()
+            self.model.classifier = torch.nn.Linear(512 * 7 * 7, 1)
+        elif size == 1:
+            self.model = models.vgg13()
+            self.model.classifier = torch.nn.Linear(512 * 7 * 7, 1)
+        elif size == 2:
+            self.model = models.vgg16()
+            self.model.classifier = torch.nn.Linear(512 * 7 * 7, 1)
+        elif size == 3:
+            self.model = models.vgg19()
+            self.model.classifier = torch.nn.Linear(512 * 7 * 7, 1)
+        else:
+            print("Invalid size specified, defaulting to convnext_tiny")
+            self.model = models.vgg11()
+            self.model.classifier = torch.nn.Linear(512 * 7 * 7, 1)
+        print(self.model)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
+
+class SEMPro_ResNet(torch.nn.Module):
+    def __init__(self, fc_size=2048, size=0, pretrained=False):
+        super(SEMPro_ResNet, self).__init__()
+        if size == 0:
+            self.model = models.resnet18(pretrained=pretrained)
+        elif size == 1:
+            self.model = models.resnet34(pretrained=pretrained)
+        elif size == 2:
+            self.model = models.resnet50(pretrained=pretrained)
+        elif size == 3:
+            self.model = models.resnet101(pretrained=pretrained)
+        else:
+            print("Invalid size specified, defaulting to convnext_tiny")
+            self.model = models.resnet50()
+        self.model.fc = torch.nn.Linear(fc_size, 1)
+
         print(self.model)
 
     def forward(self, x):
