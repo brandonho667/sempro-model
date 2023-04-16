@@ -4,3 +4,4 @@ densenet161: 26474209
 alexnet: 2478913
 vgg19: 20049473
 resnet50: 23510081
+googlenet: 9932963

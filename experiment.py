@@ -180,6 +180,8 @@ class Experiment(object):
         elif config_data["model"]["model_name"] == "resnet101":
             self.model = SEMPro_ResNet(fc_size=config_data["model"]['fc_size'],
                                        size=3, pretrained=pretrained)
+        elif config_data["model"]["model_name"] == "googlenet":
+            self.model = SEMPro_GoogLeNet()
         elif config_data["model"]["model_name"] == "baseplate":
             self.model = torch.load("experiments/baseplate/best.pt")
         else:
@@ -251,21 +253,51 @@ class Experiment(object):
                 self.optimizer.zero_grad()
                 # Predict values
                 pred = self.model(image)
-                # Compute loss
-                # loss = self.criterion(pred.squeeze(), label, weight)
-                loss = weighted_l1_loss(pred.squeeze(), label, weight)
-                # Backpropagate
-                loss.backward()
-                # Update parameters
-                self.optimizer.step()
-                # Move variables to cpu
-                pred = pred.cpu().detach()
-                label = label.cpu().detach()
-                # Compute losses
-                train_mae_loss += mean_absolute_error(
-                    pred, label)*image.shape[0]
-                train_mse_loss += mean_squared_error(pred,
-                                                     label)*image.shape[0]
+                if type(pred).__name__ == "GoogLeNetOutputs":
+                    # Compute loss
+                    # loss = self.criterion(pred.squeeze(), label, weight)
+                    loss = weighted_l1_loss(
+                        pred.logits.squeeze(), label, weight)
+                    # Backpropagate
+                    loss.backward(retain_graph=True)
+                    # Compute loss
+                    # loss = self.criterion(pred.squeeze(), label, weight)
+                    loss = weighted_l1_loss(
+                        pred.aux_logits2.squeeze(), label, weight)
+                    # Backpropagate
+                    loss.backward(retain_graph=True)
+                    # Compute loss
+                    # loss = self.criterion(pred.squeeze(), label, weight)
+                    loss = weighted_l1_loss(
+                        pred.aux_logits1.squeeze(), label, weight)
+                    # Backpropagate
+                    loss.backward()
+                    # Update parameters
+                    self.optimizer.step()
+                    # Move variables to cpu
+                    pred = pred.logits.cpu().detach()
+                    label = label.cpu().detach()
+                    # Compute losses
+                    train_mae_loss += mean_absolute_error(
+                        pred, label)*image.shape[0]
+                    train_mse_loss += mean_squared_error(pred,
+                                                         label)*image.shape[0]
+                else:
+                    # Compute loss
+                    # loss = self.criterion(pred.squeeze(), label, weight)
+                    loss = weighted_l1_loss(pred.squeeze(), label, weight)
+                    # Backpropagate
+                    loss.backward()
+                    # Update parameters
+                    self.optimizer.step()
+                    # Move variables to cpu
+                    pred = pred.cpu().detach()
+                    label = label.cpu().detach()
+                    # Compute losses
+                    train_mae_loss += mean_absolute_error(
+                        pred, label)*image.shape[0]
+                    train_mse_loss += mean_squared_error(pred,
+                                                         label)*image.shape[0]
             train_mae_loss /= len(self.train_data)
             train_mse_loss /= len(self.train_data)
             self.model.eval()

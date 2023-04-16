@@ -187,3 +187,15 @@ class SEMPro_ResNet(torch.nn.Module):
     def forward(self, x):
         x = self.model(x)
         return x
+
+
+class SEMPro_GoogLeNet(torch.nn.Module):
+    def __init__(self, fc_size=1024, size=0, pretrained=False):
+        super(SEMPro_GoogLeNet, self).__init__()
+        self.model = models.googlenet(
+            init_weights=True, num_classes=1)
+        print(self.model)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x

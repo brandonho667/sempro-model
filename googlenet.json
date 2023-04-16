@@ -1,0 +1,45 @@
+{
+    "experiment_name": "googlenet_exp",
+    "dataset": {
+        "sem_dataset": "sem_dataset",
+        "filepath": "SEM_Final.xlsx",
+        "test_split": 0.2,
+        "val_split": 0.25,
+        "random_state": 42
+    },
+    "model": {
+        "pretrained_model": false,
+        "model_name": "googlenet",
+        "criterion": "L1",
+        "fc_size": 1024
+    },
+    "hparams": {
+        "optimizer": "AdamW",
+        "batch_size": 10,
+        "lr": 1e-5,
+        "weight_decay": 0.03,
+        "LR_scheduler": "step",
+        "steps_per_decay": 20,
+        "LR_gamma": 0.5,
+        "lds": true,
+        "lds_ks": 10,
+        "lds_sigma": 2,
+        "bf": 3
+    },
+    "output": {
+        "train_file_suffix": "train.csv",
+        "plot_folder_suffix": "plots",
+        "best_model_path": "best.pt",
+        "dpi": 300
+    },
+    "transforms": {
+        "rotate": 90,
+        "resize": 256,
+        "crop": 224,
+        "normalize": [
+            0,
+            1
+        ]
+    },
+    "epochs": 100
+}
