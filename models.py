@@ -103,7 +103,8 @@ class SEMPro_ConvNext(torch.nn.Module):
         super(SEMPro_ConvNext, self).__init__()
         if size == 0:
             self.model = models.convnext_tiny(pretrained=pretrained)
-            self.model.classifier = torch.nn.Linear(2208, 1)
+            self.model.classifier = torch.nn.Sequential(
+                torch.nn.Flatten(1), torch.nn.Linear(768, 1))
         elif size == 1:
             self.model = models.convnext_small(pretrained=pretrained)
             self.model.classifier = torch.nn.Sequential(torch.nn.Flatten(start_dim=1, end_dim=-1),
@@ -119,8 +120,8 @@ class SEMPro_ConvNext(torch.nn.Module):
         else:
             print("Invalid size specified, defaulting to convnext_tiny")
             self.model = models.convnext_tiny(pretrained=pretrained)
-            self.model.classifier = torch.nn.Sequential(torch.nn.Flatten(start_dim=1, end_dim=-1),
-                                                        torch.nn.Linear(768, 1))
+            self.model.classifier = torch.nn.Sequential(
+                torch.nn.Flatten(1), torch.nn.Linear(768, 1))
         print(self.model)
 
     def forward(self, x):

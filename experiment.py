@@ -92,7 +92,7 @@ class Experiment(object):
         )
 
         # Generate the train/val/test split
-        train_idx, test_idx = train_test_split(list(range(len(dataset()))),
+        train_idx, test_idx = train_test_split(list(range(len(dataset(filepath=config_data['dataset']['filepath'])))),
                                                test_size=config_data['dataset']["test_split"],
                                                random_state=config_data['dataset']["random_state"])
         train_idx, val_idx = train_test_split(train_idx,

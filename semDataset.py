@@ -133,6 +133,8 @@ class semDataset(Dataset):
             # plt.xlabel(r'Modulus ($\log_{10}$ Pa)')
             # plt.show()
             print(plt.gcf().get_size_inches())
+        else:
+            print(f'Not using LDS')
         weights = [np.float32(1 / x) for x in num_per_label]
         scaling = len(weights) / np.sum(weights)
         weights = [scaling * x for x in weights]

@@ -1,8 +1,8 @@
 {
-    "experiment_name": "pre_kf5_linear",
+    "experiment_name": "baseplate",
     "dataset": {
         "sem_dataset": "sem_dataset",
-        "filepath": "SEM_GOPNIPAM.xlsx",
+        "filepath": "SEM_Final.xlsx",
         "test_split": 0.2,
         "val_split": 0.2,
         "random_state": 42
@@ -16,7 +16,7 @@
     "hparams": {
         "optimizer": "AdamW",
         "batch_size": 10,
-        "lr": 5e-4,
+        "lr": 1e-6,
         "weight_decay": 0.02,
         "LR_scheduler": "plateau",
         "steps_per_decay": 20,
@@ -41,5 +41,5 @@
             1
         ]
     },
-    "epochs": 20
+    "epochs": 100
 }
